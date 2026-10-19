@@ -1,5 +1,6 @@
 package com.example.products.service;
 
+import com.example.products.exception.ResourceNotFoundException;
 import com.example.products.model.Category;
 import com.example.products.model.Product;
 import com.example.products.repository.CategoryRepository;
@@ -31,22 +32,42 @@ public class ProductService {
     public Optional<Product> findById(Long id){
         return repo.findById(id);
     }
-    public Product save(Product product, Long id){
-        Category category = repoCategory.findById(id).orElseThrow(
 
-
+    public Product save(Product product, Long categoryId){
+        Category category = repoCategory.
+        findById(categoryId).
+        orElseThrow(
+            ()->
+            new ResourceNotFoundException("Category not found with id: "
+            + categoryId)
+            
         );
         product.setCategory(category);
         return repo.save(product);
     }
-    public Optional<Product> update(Long id,Product product){
-        Optional<Product> optional = repo.findById(id);
-        Product productBd=optional.get();
-        productBd.setName(product.getName());
-        productBd.setPrice(product.getPrice());
-        productBd.setStock(product.getStock());
+
+    public Optional<Product> update(Long id,Product newproduct,Long categoryId){
+
+        Product productBd=repo.findById(id).orElseThrow(
+            ()->
+            new ResourceNotFoundException("Product not found: " +
+            "with id"+ id)
+        );
+
+        //ehh
+        Category category2= repoCategory.findById(categoryId).orElseThrow(
+            ()->
+            new ResourceNotFoundException("Category not found whit id" +
+                categoryId
+            )
+        );
 
 
+        productBd.setName(newproduct.getName());
+        productBd.setPrice(newproduct.getPrice());
+        productBd.setStock(newproduct.getStock());
+        productBd.setCategory(category2);
+         
         return Optional.of(repo.save(productBd));
     }
     public boolean delete(Long id){

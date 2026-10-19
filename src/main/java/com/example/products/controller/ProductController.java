@@ -42,8 +42,6 @@ public class ProductController {
     @GetMapping ()
     public ResponseEntity<List<ProductResponse>> findAll() {
         List<ProductResponse> lista = new ArrayList<>();
-
-
         for(Product elem: service.findAll()){
             lista.add(toResponse(elem));
         }
@@ -55,7 +53,6 @@ public class ProductController {
         if (product.isEmpty()) {
             ResponseEntity.notFound().build();
         }
-        
         return ResponseEntity.ok(toResponse(product.get()));
     }
     
@@ -67,13 +64,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(newProduct));
     }
 
-
-    
-
-
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(@PathVariable Long id,@Valid @RequestBody ProductRequest productUpdated) {
-        Optional<Product> product1 =service.update(id,toEntity( productUpdated));
+        Optional<Product> product1 =service.update(
+            id,
+            toEntity( productUpdated),
+            productUpdated.categoryId()
+        );
         if (product1.isPresent()) {
             return  ResponseEntity.ok(toResponse(product1.get()));
         }
