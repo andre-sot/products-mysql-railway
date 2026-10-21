@@ -1,29 +1,28 @@
 package com.example.products.controller;
 
-import com.example.products.dto.ProductRequest;
-import com.example.products.dto.ProductResponse;
-import com.example.products.model.Product;
-import com.example.products.service.ProductService;
-
-
-import jakarta.validation.Valid;
-
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
 
+import com.example.products.dto.DiscountRequest;
+import com.example.products.dto.ProductRequest;
+import com.example.products.dto.ProductResponse;
+import com.example.products.model.Product;
+import com.example.products.service.ProductService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -48,12 +47,14 @@ public class ProductController {
         return ResponseEntity.ok(lista) ;
     }
     @GetMapping("/{id}")
+    //gdgg
     public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
-        Optional<Product> product =service.findById(id);
-        if (product.isEmpty()) {
-            ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toResponse(product.get()));
+        Product product =service.findById(id).orElseThrow(
+            ()->
+            new ResourceAccessException("producto no encontrado" + id)
+        );
+
+        return ResponseEntity.ok(toResponse(product));
     }
     
 @PostMapping
@@ -66,15 +67,13 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(@PathVariable Long id,@Valid @RequestBody ProductRequest productUpdated) {
-        Optional<Product> product1 =service.update(
+        Product product1 =service.update(
             id,
             toEntity( productUpdated),
             productUpdated.categoryId()
         );
-        if (product1.isPresent()) {
-            return  ResponseEntity.ok(toResponse(product1.get()));
-        }
-        return ResponseEntity.notFound().build();
+        
+        return ResponseEntity.ok(toResponse(product1));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
@@ -84,6 +83,26 @@ public class ProductController {
         }
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductResponse> updatePrice (@PathVariable Long id,
+    @RequestBody DiscountRequest  request ){
+
+        Product product =service.findById(id).orElseThrow(
+            ()->
+            new ResourceAccessException("producto no encontrado" + id)
+        );
+
+        if(product.getStock() == 0){
+            throw new DiscountRequest()
+        }
+
+
+        
+         return ResponseEntity.ok(toResponse(product));
+    }
+
+
 
 
     private ProductResponse toResponse(Product product){
