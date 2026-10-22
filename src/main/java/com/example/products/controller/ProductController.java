@@ -19,6 +19,7 @@ import org.springframework.web.client.ResourceAccessException;
 import com.example.products.dto.DiscountRequest;
 import com.example.products.dto.ProductRequest;
 import com.example.products.dto.ProductResponse;
+import com.example.products.exception.ResourceNotFoundException;
 import com.example.products.model.Product;
 import com.example.products.service.ProductService;
 
@@ -90,17 +91,22 @@ public class ProductController {
 
         Product product =service.findById(id).orElseThrow(
             ()->
-            new ResourceAccessException("producto no encontrado" + id)
+            new ResourceNotFoundException("producto no encontrado" + id)
         );
 
-        if(product.getStock() == 0){
-            throw new DiscountRequest()
+        if(product.getStock() == 0)
+            {throw new ResourceAccessException(
+                "No se permite aplicar un descuento si el producto tiene un stock de 0 unidades.");
+            };
+
+         double precioDescontado = product.getPrice() * (1 - (request.getPercentage() / 100.0));
+        product.setPrice(precioDescontado);
+
+         Product productoGuardado = service.update(id, product, product.getCategory().getId());
+
+          return ResponseEntity.ok(toResponse(productoGuardado));
+
         }
-
-
-        
-         return ResponseEntity.ok(toResponse(product));
-    }
 
 
 

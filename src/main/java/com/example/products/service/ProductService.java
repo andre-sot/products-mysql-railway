@@ -59,7 +59,7 @@ public class ProductService {
                 ()->
                         new ResourceNotFoundException("Category not found whit id" +
                                 
-categoryId
+        categoryId
                         )
         );
         productBd.setName(newproduct.getName());
