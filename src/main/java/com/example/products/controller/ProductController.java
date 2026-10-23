@@ -85,28 +85,31 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
+        @PatchMapping("/{id}")
     public ResponseEntity<ProductResponse> updatePrice (@PathVariable Long id,
-    @RequestBody DiscountRequest  request ){
+    @Valid @RequestBody DiscountRequest request ){ 
 
-        Product product =service.findById(id).orElseThrow(
-            ()->
-            new ResourceNotFoundException("producto no encontrado" + id)
+        
+        Product product = service.findById(id).orElseThrow(
+            () -> new ResourceNotFoundException("Producto no encontrado con el id: " + id)
         );
 
-        if(product.getStock() == 0)
-            {throw new ResourceAccessException(
-                "No se permite aplicar un descuento si el producto tiene un stock de 0 unidades.");
-            };
 
-         double precioDescontado = product.getPrice() * (1 - (request.getPercentage() / 100.0));
+        if (product.getStock() == 0) {
+            throw new ResourceNotFoundException(
+                "No se permite aplicar un descuento si el producto tiene un stock de 0 unidades."
+            );
+        }
+        
+        double precioDescontado = product.getPrice() * (1 - (request.getPercentage() / 100.0));
         product.setPrice(precioDescontado);
 
-         Product productoGuardado = service.update(id, product, product.getCategory().getId());
+        Product productoGuardado = service.update(id, product, product.getCategory().getId());
 
-          return ResponseEntity.ok(toResponse(productoGuardado));
+        return ResponseEntity.ok(toResponse(productoGuardado));
+    }
 
-        }
+    
 
 
 
